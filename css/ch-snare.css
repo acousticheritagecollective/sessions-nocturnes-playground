@@ -1,0 +1,42 @@
+/* CH05b — SNARE (narrow like kick) */
+.channel-strip.ch-snare {
+  --ch-accent: #ff6644;
+  --ch-accent-dim: rgba(255,102,68,0.15);
+  --ch-font: 'JetBrains Mono', monospace;
+  min-width: 70px;
+  max-width: 90px;
+  gap: 3px !important;
+  padding: 6px !important;
+}
+.ch-snare .loop-select {
+  font-size: 8px;
+  padding: 2px 3px;
+}
+
+/* EQ row: 3 mini knobs inline */
+.ch-snare .knob-row {
+  gap: 1px;
+}
+.ch-snare .eq-section .knob-wrap,
+.ch-snare .knob-row .knob-wrap {
+  --knob-size: 34px;
+  width: 34px;
+  height: 34px;
+}
+.ch-snare .eq-section .knob-svg,
+.ch-snare .knob-row .knob-svg {
+  width: 34px;
+  height: 34px;
+}
+
+/* Snare seq footer row accent */
+.snare-seq-section .seq-step.on {
+  background: var(--accent-orange, #ff6644);
+  border-color: var(--accent-orange, #ff6644);
+}
+.snare-seq-section .seq-step.current {
+  box-shadow: inset 0 0 6px rgba(255,102,68,0.6);
+}
+.snare-seq-section .seq-title {
+  color: #ff6644;
+}

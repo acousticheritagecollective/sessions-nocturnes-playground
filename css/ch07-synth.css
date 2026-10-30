@@ -1,0 +1,171 @@
+/* CH07 — SYNTH BASS */
+.channel-strip.ch07-synth {
+  --ch-accent: #ff44aa;
+  --ch-accent-dim: rgba(255,68,170,0.15);
+  --ch-font: 'JetBrains Mono', monospace;
+}
+
+/* Compact synth spacing */
+.ch07-synth { gap: 3px !important; padding: 6px !important; }
+.ch07-synth .knob-row { gap: 2px; }
+.ch07-synth .knob-group { gap: 0px; }
+.ch07-synth .section-label { margin-bottom: 1px; }
+.ch07-synth .sends-section { margin-top: 0; }
+.ch07-synth .fader-section { padding-top: 2px; }
+.ch07-synth .channel-fader {
+  width: 90px;
+  margin: 34px 0;
+}
+
+/* ADSR row: 4 mini knobs */
+.ch07-synth .adsr-row .knob-wrap {
+  --knob-size: 34px;
+  width: 34px;
+  height: 34px;
+}
+.ch07-synth .adsr-row .knob-svg {
+  width: 34px;
+  height: 34px;
+}
+
+/* Oscilloscope */
+.scope-canvas {
+  width: 100%;
+  height: 32px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  background: rgba(10,10,14,0.8);
+}
+
+/* Waveform selector */
+.synth-wave-row {
+  display: flex;
+  gap: 2px;
+  width: 100%;
+}
+.wave-btn {
+  flex: 1;
+  height: 16px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--ch-font);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+}
+.wave-btn:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.wave-btn.active {
+  background: var(--ch-accent);
+  color: #000;
+  border-color: var(--ch-accent);
+}
+
+/* Pitched Step Sequencer */
+.synth-seq {
+  width: 100%;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.synth-seq.active, .synth-seq:has(.synth-seq-toggle.active) {
+  opacity: 1;
+}
+
+.synth-seq-toggle, .synth-seq-rnd, .synth-seq-major, .synth-seq-minor {
+  height: 18px;
+  padding: 0 5px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--ch-font);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.synth-seq-toggle { flex: 1; }
+.synth-seq-major { flex: 1; }
+.synth-seq-minor { flex: 1; }
+.synth-seq-toggle:hover, .synth-seq-rnd:hover,
+.synth-seq-major:hover, .synth-seq-minor:hover {
+  border-color: var(--ch-accent);
+  color: var(--ch-accent);
+}
+.synth-seq-toggle.active {
+  background: var(--ch-accent);
+  color: #000;
+  border-color: var(--ch-accent);
+}
+.synth-seq-rnd:active, .synth-seq-major:active, .synth-seq-minor:active {
+  background: var(--ch-accent);
+  color: #000;
+}
+
+/* Grid: 8 cols × 4 rows */
+.synth-seq-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 1px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+.synth-step {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.1s;
+}
+.synth-step.beat {
+  border-left: 2px solid var(--border-bright);
+}
+.synth-step.on {
+  border-color: var(--ch-accent-dim);
+}
+.synth-step.current {
+  border-color: var(--ch-accent) !important;
+  box-shadow: inset 0 0 4px var(--ch-accent-dim);
+}
+
+/* Pitch bar inside each step */
+.synth-step-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0%;
+  background: var(--ch-accent);
+  opacity: 0.6;
+  transition: height 0.1s;
+  border-radius: 1px;
+}
+.synth-step.on .synth-step-bar {
+  opacity: 0.7;
+}
+
+/* Pitch label */
+.synth-step-pitch {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--ch-font);
+  font-size: 5px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 2px #000;
+  z-index: 1;
+  pointer-events: none;
+}

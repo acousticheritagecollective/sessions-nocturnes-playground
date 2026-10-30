@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sessions Nocturnes — DJ Mixer</title>
+  <link rel="icon" type="image/x-icon" href="ahc.ico">
+  <link rel="shortcut icon" href="ahc.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/mixer.css">
+  <link rel="stylesheet" href="css/midi-clock.css">
+  <link rel="stylesheet" href="css/perf-monitor.css">
+  <link rel="stylesheet" href="css/channel-base.css">
+  <link rel="stylesheet" href="css/ch08-tracks.css">
+  <link rel="stylesheet" href="css/ch05-kicks.css">
+  <link rel="stylesheet" href="css/ch06-delay.css">
+  <link rel="stylesheet" href="css/ch06-input.css">
+<link rel="stylesheet" href="css/sample-preloader.css">
+  <link rel="stylesheet" href="css/v2.css">
+
+</head>
+<body>
+  <header id="header">
+    <div class="header-row">
+      <div class="brand"><span class="brand-name">Sessions Nocturnes</span><span class="brand-model">PLYGRND V1</span></div>
+      <div class="bpm-section"><label class="label-tiny">BPM</label><input type="number" id="bpm-display" class="bpm-display" value="127" min="60" max="200" step="0.1"></div>
+
+      <!-- ═══ TRANSPORT ═══ -->
+      <div class="transport-section"><button id="btn-play" class="transport-btn" title="Play">&#9654;</button><button id="btn-stop" class="transport-btn" title="Stop">&#9632;</button></div>
+
+      <!-- ═══ MASTER FILTERS ═══ -->
+      <div class="header-filters hdr-module">
+        <div class="hdr-filter-block"><button class="toggle-btn mini" id="hpf-toggle" data-active="false">HPF</button><div class="knob-wrap" id="hpf-freq-knob" data-param="hpfFreq" data-min="20" data-max="700" data-value="20"></div><span class="freq-display" id="hpf-freq-val">20 Hz</span></div>
+        <div class="hdr-filter-block"><button class="toggle-btn mini" id="lpf-toggle" data-active="false">LPF</button><div class="knob-wrap" id="lpf-freq-knob" data-param="lpfFreq" data-min="200" data-max="20000" data-value="20000"></div><span class="freq-display" id="lpf-freq-val">20k Hz</span></div>
+      </div>
+
+      <!-- ═══ LIMITER ═══ -->
+      <section class="hdr-module limiter-section" id="limiter-section">
+        <div class="lim-title-row"><h3 class="panel-title">LIMITER <span class="lim-mode" id="lim-mode"></span></h3><button class="lim-toggle active" id="lim-toggle" title="Limiter on/off">ON</button></div>
+        <div class="lim-body">
+          <div class="knob-row">
+            <div class="knob-group"><label class="label-tiny">THRESH</label><div class="knob-wrap" id="lim-thresh-knob" data-param="limThresh" data-min="-24" data-max="-0.1" data-value="-1"></div></div>
+            <div class="knob-group"><label class="label-tiny">REL</label><div class="knob-wrap" id="lim-release-knob" data-param="limRelease" data-min="10" data-max="1000" data-value="150"></div></div>
+          </div>
+        </div>
+        <div class="lim-gr" title="Gain reduction (peak hold). Output never exceeds THRESH">
+          <label class="label-tiny">GR</label>
+          <div class="lim-gr-bar"><div class="lim-gr-fill" id="lim-gr-fill"></div><div class="lim-gr-hold" id="lim-gr-hold"></div></div>
+          <span class="lim-gr-val" id="lim-gr-val">0.0 dB</span>
+        </div>
+        <div class="lim-scale"><span>0</span><span>-3</span><span>-6</span><span>-9</span><span>-12</span></div>
+      </section>
+
+      <!-- ═══ MASTER LEVEL ═══ -->
+      <div class="master-section">
+        <label class="label-tiny">MASTER</label>
+        <div class="knob-wrap knob-lg" id="master-gain-knob" data-param="masterGain" data-min="0" data-max="1" data-value="0.8"></div>
+      </div>
+      <div class="vu-section" title="Output peak (after limiter) — marks at -3 / -6 / -12 dBFS">
+        <canvas id="vu-meter" width="16" height="88"></canvas>
+      </div>
+
+      <!-- ═══ AUDIO IN / OUT ═══ -->
+      <div class="output-section hdr-module"><label class="label-tiny">OUTPUT</label><select id="audio-output" class="select-output"><option value="default">System Default</option></select><label class="label-tiny">INPUT</label><select id="audio-input" class="select-output"><option value="">— Select Input —</option></select></div>
+
+      <!-- ═══ MIDI CLOCK ═══ -->
+      <div class="midi-clock-section" id="midi-clock-section">
+        <label class="label-tiny">MIDI SYNC</label>
+        <div class="midi-mode-row">
+          <button class="midi-mode-btn active" data-mode="internal">INT</button>
+          <button class="midi-mode-btn" data-mode="slave">SLAVE</button>
+          <button class="midi-mode-btn" data-mode="master">MASTER</button>
+        </div>
+        <span class="midi-status midi-status-off" id="midi-status">INTERNAL</span>
+        <div class="midi-device-row" id="midi-input-row" style="display:none">
+          <label class="label-tiny">IN</label>
+          <select id="midi-input-select" class="midi-device-select"><option value="">— No Input —</option></select>
+        </div>
+        <div class="midi-device-row" id="midi-output-row" style="display:none">
+          <label class="label-tiny">OUT</label>
+          <select id="midi-output-select" class="midi-device-select"><option value="">— No Output —</option></select>
+        </div>
+        <span class="midi-bpm-display" id="midi-bpm-display"></span>
+      </div>
+
+      <!-- ═══ MIDI LEARN (V2: 4 controllers) ═══ -->
+      <div class="midi-learn-section" id="midi-learn-section">
+        <label class="label-tiny">MIDI LEARN</label>
+        <div class="midi-slot-grid">
+          <select id="midi-cc-input-select" class="midi-device-select midi-cc-slot-select" data-slot="1" title="MIDI LEARN 1"><option value="">1 · —</option></select>
+          <select class="midi-device-select midi-cc-slot-select" data-slot="2" title="MIDI LEARN 2"><option value="">2 · —</option></select>
+          <select class="midi-device-select midi-cc-slot-select" data-slot="3" title="MIDI LEARN 3"><option value="">3 · —</option></select>
+          <select class="midi-device-select midi-cc-slot-select" data-slot="4" title="MIDI LEARN 4"><option value="">4 · —</option></select>
+        </div>
+        <div class="midi-learn-row">
+          <button class="midi-learn-btn" id="midi-learn-toggle">LEARN</button>
+          <button class="midi-learn-clear-btn" id="midi-learn-clear">CLR</button>
+          <button class="midi-learn-btn" id="midi-learn-save" title="Save mapping to JSON file">SAVE</button>
+          <button class="midi-learn-btn" id="midi-learn-load" title="Load mapping from JSON file">LOAD</button>
+        </div>
+        <input type="file" id="midi-learn-file-input" accept=".json,application/json" style="display:none">
+        <span class="midi-learn-status" id="midi-learn-status"></span>
+      </div>
+
+      <button class="perf-toggle-btn" id="perf-toggle" title="Performance Monitor">⚡</button>
+    </div>
+  </header>
+
+  <main id="mixer-body">
+    <div class="channels-area">
+
+      <!-- ═══ DECK A ═══ -->
+      <div class="channel-strip ch08a" id="ch08a">
+        <div class="ch-header"><span class="ch-label">DECK A</span></div>
+        <div class="tk-select-row">
+          <select class="tk-track-select"></select>
+          <button class="tk-browse-prev" title="Track anterior">−</button>
+          <button class="tk-browse-display" title="Track"><span class="tk-bd-num">--</span></button>
+          <button class="tk-browse-next" title="Track siguiente">+</button>
+        </div>
+        <canvas class="tk-waveform" width="220" height="52"></canvas>
+        <div class="tk-time-row">
+          <span class="tk-time">0:00.00</span>
+          <span class="tk-bar-info">B0/0 S0</span>
+          <span class="tk-bpm-info">SRC <span class="detected">—</span></span>
+          <span class="tk-remaining">-0:00</span>
+        </div>
+        <div class="tk-transport-row">
+          <button class="tk-play-btn stopped">&#9654;</button>
+        </div>
+        <div class="tk-loop-section">
+          <div class="tk-loop-header"><button class="tk-loop-toggle">LOOP</button><div class="tk-loop-nav"><button class="tk-loop-left">◀</button><button class="tk-loop-right">▶</button></div></div>
+          <div class="tk-loop-btns">
+            <button class="tk-loop-btn" data-loop="8">8</button><button class="tk-loop-btn" data-loop="4">4</button><button class="tk-loop-btn" data-loop="2">2</button><button class="tk-loop-btn" data-loop="1">1</button>
+            <button class="tk-loop-btn" data-loop="0.25">¼</button><button class="tk-loop-btn" data-loop="0.125">⅛</button><button class="tk-loop-btn" data-loop="0.0625">1/16</button>
+          </div>
+        </div>
+        <div class="tk-knobs-row">
+        <div class="tk-filter-row">
+          <div class="tk-filter-group"><button class="tk-hpf-toggle">HPF</button><div class="knob-wrap" data-param="tkHpf" data-min="20" data-max="700" data-value="20"></div></div>
+          <div class="tk-filter-group"><button class="tk-lpf-toggle">LPF</button><div class="knob-wrap" data-param="tkLpf" data-min="200" data-max="20000" data-value="20000"></div></div>
+        </div>
+        <div class="sends-section"><label class="label-tiny section-label">SENDS</label>
+          <div class="knob-row sends-row">
+            <div class="knob-group"><label class="label-tiny">DLY</label><div class="knob-wrap" data-param="tkSendDly" data-min="0" data-max="1" data-value="0"></div></div>
+            <div class="knob-group"><label class="label-tiny">REV</label><div class="knob-wrap" data-param="tkSendRev" data-min="0" data-max="1" data-value="0"></div></div>
+            <div class="knob-group"><label class="label-tiny">DIST</label><div class="knob-wrap" data-param="tkSendDist" data-min="0" data-max="1" data-value="0"></div></div>
+          </div>
+        </div>
+        <div class="aux-group"><button class="aux-mode-btn aux-labeled" title="AUX: POST = después del fader (por defecto) · PRE = antes del fader">POST</button><div class="knob-wrap" data-param="auxSend" data-min="0" data-max="1" data-value="0" title="AUX send"></div></div>
+        </div>
+        <div class="gate-seq">
+          <div class="gate-btn-row"><button class="gate-toggle">GATE</button><div class="gate-env"><label class="label-tiny">ATK</label><div class="knob-wrap" data-param="gateAtk" data-min="1" data-max="250" data-value="6"></div></div><div class="gate-env"><label class="label-tiny">REL</label><div class="knob-wrap" data-param="gateRel" data-min="1" data-max="500" data-value="6"></div></div><button class="gate-random-btn">RND</button></div>
+          <div class="gate-grid"></div>
+        </div>
+        <div class="fader-section"><div class="mute-mon-row"><button class="ch-mute-btn">MUTE</button><button class="ch-mon-btn" title="MONITOR: saca el canal del master y lo manda solo a la salida de monitor"><svg class="hp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="2.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/><rect x="16.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/></svg><span>MON</span></button></div><label class="label-tiny">VOL</label><input type="range" class="channel-fader" min="0" max="1" step="0.01" value="0.8" orient="vertical"><canvas class="ch-meter" title="Post-fader level"></canvas></div>
+      </div>
+
+      <!-- ═══ DECK B ═══ -->
+      <div class="channel-strip ch08b" id="ch08b">
+        <div class="ch-header"><span class="ch-label">DECK B</span></div>
+        <div class="tk-select-row">
+          <select class="tk-track-select"></select>
+          <button class="tk-browse-prev" title="Track anterior">−</button>
+          <button class="tk-browse-display" title="Track"><span class="tk-bd-num">--</span></button>
+          <button class="tk-browse-next" title="Track siguiente">+</button>
+        </div>
+        <canvas class="tk-waveform" width="220" height="52"></canvas>
+        <div class="tk-time-row">
+          <span class="tk-time">0:00.00</span>
+          <span class="tk-bar-info">B0/0 S0</span>
+          <span class="tk-bpm-info">SRC <span class="detected">—</span></span>
+          <span class="tk-remaining">-0:00</span>
+        </div>
+        <div class="tk-transport-row">
+          <button class="tk-play-btn stopped">&#9654;</button>
+        </div>
+        <div class="tk-loop-section">
+          <div class="tk-loop-header"><button class="tk-loop-toggle">LOOP</button><div class="tk-loop-nav"><button class="tk-loop-left">◀</button><button class="tk-loop-right">▶</button></div></div>
+          <div class="tk-loop-btns">
+            <button class="tk-loop-btn" data-loop="8">8</button><button class="tk-loop-btn" data-loop="4">4</button><button class="tk-loop-btn" data-loop="2">2</button><button class="tk-loop-btn" data-loop="1">1</button>
+            <button class="tk-loop-btn" data-loop="0.25">¼</button><button class="tk-loop-btn" data-loop="0.125">⅛</button><button class="tk-loop-btn" data-loop="0.0625">1/16</button>
+          </div>
+        </div>
+        <div class="tk-knobs-row">
+        <div class="tk-filter-row">
+          <div class="tk-filter-group"><button class="tk-hpf-toggle">HPF</button><div class="knob-wrap" data-param="tkHpf" data-min="20" data-max="700" data-value="20"></div></div>
+          <div class="tk-filter-group"><button class="tk-lpf-toggle">LPF</button><div class="knob-wrap" data-param="tkLpf" data-min="200" data-max="20000" data-value="20000"></div></div>
+        </div>
+        <div class="sends-section"><label class="label-tiny section-label">SENDS</label>
+          <div class="knob-row sends-row">
+            <div class="knob-group"><label class="label-tiny">DLY</label><div class="knob-wrap" data-param="tkSendDly" data-min="0" data-max="1" data-value="0"></div></div>
+            <div class="knob-group"><label class="label-tiny">REV</label><div class="knob-wrap" data-param="tkSendRev" data-min="0" data-max="1" data-value="0"></div></div>
+            <div class="knob-group"><label class="label-tiny">DIST</label><div class="knob-wrap" data-param="tkSendDist" data-min="0" data-max="1" data-value="0"></div></div>
+          </div>
+        </div>
+        <div class="aux-group"><button class="aux-mode-btn aux-labeled" title="AUX: POST = después del fader (por defecto) · PRE = antes del fader">POST</button><div class="knob-wrap" data-param="auxSend" data-min="0" data-max="1" data-value="0" title="AUX send"></div></div>
+        </div>
+        <div class="gate-seq">
+          <div class="gate-btn-row"><button class="gate-toggle">GATE</button><div class="gate-env"><label class="label-tiny">ATK</label><div class="knob-wrap" data-param="gateAtk" data-min="1" data-max="250" data-value="6"></div></div><div class="gate-env"><label class="label-tiny">REL</label><div class="knob-wrap" data-param="gateRel" data-min="1" data-max="500" data-value="6"></div></div><button class="gate-random-btn">RND</button></div>
+          <div class="gate-grid"></div>
+        </div>
+        <div class="fader-section"><div class="mute-mon-row"><button class="ch-mute-btn">MUTE</button><button class="ch-mon-btn" title="MONITOR: saca el canal del master y lo manda solo a la salida de monitor"><svg class="hp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="2.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/><rect x="16.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/></svg><span>MON</span></button></div><label class="label-tiny">VOL</label><input type="range" class="channel-fader" min="0" max="1" step="0.01" value="0.8" orient="vertical"><canvas class="ch-meter" title="Post-fader level"></canvas></div>
+      </div>
+
+      <!-- ═══ KICKS ═══ -->
+      <div class="channel-strip ch05" id="ch05">
+        <div class="ch-header"><span class="ch-label">SAMPLER</span><span class="ch-name">KICKS</span></div>
+        <div class="loop-selector"><label class="label-tiny">SAMPLE</label><div class="kick-select-row"><select id="kick-sample-select" class="loop-select"></select><div class="knob-wrap" id="kick-select-knob" data-param="kickSel" data-min="0" data-max="20" data-value="0" title="Kick: OFF · 01-20"></div></div></div>
+        <div class="knob-row"><div class="knob-group"><label class="label-tiny">PITCH</label><div class="knob-wrap" id="kick-pitch-knob" data-param="kickPitch" data-min="-12" data-max="12" data-value="0"></div></div></div>
+        <div class="sends-section sends-vertical">
+          <label class="label-tiny section-label">SENDS</label>
+          <div class="knob-group"><label class="label-tiny">DLY</label><div class="knob-wrap" id="kick-send-knob" data-param="kickSend" data-min="0" data-max="1" data-value="0"></div></div>
+          <div class="knob-group"><label class="label-tiny">REV</label><div class="knob-wrap" id="kick-send-rev-knob" data-param="kickSendRev" data-min="0" data-max="1" data-value="0"></div></div>
+          <div class="knob-group"><label class="label-tiny">DIST</label><div class="knob-wrap" id="kick-send-dist-knob" data-param="kickSendDist" data-min="0" data-max="1" data-value="0"></div></div>
+          <div class="knob-group aux-kick"><label class="label-tiny">AUX</label><div class="knob-wrap" id="kick-aux-knob" data-param="kickAux" data-min="0" data-max="1" data-value="0"></div><button class="aux-mode-btn" id="kick-aux-mode-btn" title="AUX: POST = después del fader (por defecto) · PRE = antes del fader">POST</button></div>
+        </div>
+        <div class="fader-section"><div class="mute-mon-row"><button class="ch-mute-btn" id="kick-mute-btn">MUTE</button><button class="ch-mon-btn" id="kick-mon-btn" title="MONITOR: saca el canal del master y lo manda solo a la salida de monitor"><svg class="hp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="2.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/><rect x="16.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/></svg><span>MON</span></button></div><label class="label-tiny">VOL</label><input type="range" class="channel-fader kick-fader" id="kick-fader" data-param="kickFader" min="0" max="1" step="0.01" value="0.8" orient="vertical"><canvas class="ch-meter" title="Post-fader level"></canvas></div>
+      </div>
+
+      <!-- ═══ CH05 GOMEZ-EXT IN ═══ -->
+      <div class="channel-strip ch06-input ext-ch ext-gomez" id="ch06-input">
+        <div class="ch-header"><span class="ch-label">CH05</span><span class="ch-name">GOMEZ-EXT IN</span></div>
+        <div class="loop-selector"><label class="label-tiny">INPUT</label><div class="ext-select-row"><select id="input-device-select" class="loop-select ext-device-select"><option value="">— Select Input —</option></select><select class="ext-chan-select" title="Entrada de la interfaz (1+2 estéreo o una sola entrada)"><option value="st">1+2</option></select></div></div>
+        <button class="ch-ready-btn" id="ext-ready-btn" title="Arm input monitoring">READY</button>
+        <span class="ext-status"></span>
+        <div class="knob-row"><div class="knob-group"><label class="label-tiny">GAIN</label><div class="knob-wrap" id="ext-gain-knob" data-param="extGain" data-min="0" data-max="3" data-value="1"></div></div></div>
+        <div class="eq-section"><label class="label-tiny section-label">EQ</label><div class="knob-row eq-row"><div class="knob-group"><label class="label-tiny">HI</label><div class="knob-wrap" id="ext-eq-hi" data-param="extEqHi" data-min="-24" data-max="6" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">MID</label><div class="knob-wrap" id="ext-eq-mid" data-param="extEqMid" data-min="-24" data-max="6" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">LOW</label><div class="knob-wrap" id="ext-eq-low" data-param="extEqLow" data-min="-24" data-max="6" data-value="0"></div></div></div></div>
+        <div class="sends-section"><label class="label-tiny section-label">SENDS</label><div class="knob-row sends-row"><div class="knob-group"><label class="label-tiny">DLY</label><div class="knob-wrap" id="ext-send-dly" data-param="extSendDly" data-min="0" data-max="1" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">REV</label><div class="knob-wrap" id="ext-send-rev" data-param="extSendRev" data-min="0" data-max="1" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">DIST</label><div class="knob-wrap" id="ext-send-dist" data-param="extSendDist" data-min="0" data-max="1" data-value="0"></div></div></div></div>
+        <div class="aux-row"><label class="label-tiny">AUX</label><div class="knob-wrap" data-param="auxSend" data-min="0" data-max="1" data-value="0"></div><button class="aux-mode-btn" title="AUX: POST = después del fader (por defecto) · PRE = antes del fader">POST</button></div>
+        <div class="fader-section"><div class="mute-mon-row"><button class="ch-mute-btn">MUTE</button><button class="ch-mon-btn" title="MONITOR: saca el canal del master y lo manda solo a la salida de monitor"><svg class="hp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="2.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/><rect x="16.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/></svg><span>MON</span></button></div><label class="label-tiny">VOL</label><input type="range" class="channel-fader" id="ext-fader" data-param="extFader" min="0" max="1" step="0.01" value="0.8" orient="vertical"><canvas class="ch-meter" title="Post-fader level"></canvas></div>
+      </div>
+
+      <!-- ═══ CH06 RAVENTÓS-EXT IN ═══ -->
+      <div class="channel-strip ch06-input ext-ch ext-raventos" id="ch07-input">
+        <div class="ch-header"><span class="ch-label">CH06</span><span class="ch-name">RAVENTÓS-EXT IN</span></div>
+        <div class="loop-selector"><label class="label-tiny">INPUT</label><div class="ext-select-row"><select class="loop-select ext-device-select"><option value="">— Select Input —</option></select><select class="ext-chan-select" title="Entrada de la interfaz (1+2 estéreo o una sola entrada)"><option value="st">1+2</option></select></div></div>
+        <button class="ch-ready-btn" title="Arm input monitoring">READY</button>
+        <span class="ext-status"></span>
+        <div class="knob-row"><div class="knob-group"><label class="label-tiny">GAIN</label><div class="knob-wrap" data-param="extGain" data-min="0" data-max="3" data-value="1"></div></div></div>
+        <div class="eq-section"><label class="label-tiny section-label">EQ</label><div class="knob-row eq-row"><div class="knob-group"><label class="label-tiny">HI</label><div class="knob-wrap" data-param="extEqHi" data-min="-24" data-max="6" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">MID</label><div class="knob-wrap" data-param="extEqMid" data-min="-24" data-max="6" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">LOW</label><div class="knob-wrap" data-param="extEqLow" data-min="-24" data-max="6" data-value="0"></div></div></div></div>
+        <div class="sends-section"><label class="label-tiny section-label">SENDS</label><div class="knob-row sends-row"><div class="knob-group"><label class="label-tiny">DLY</label><div class="knob-wrap" data-param="extSendDly" data-min="0" data-max="1" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">REV</label><div class="knob-wrap" data-param="extSendRev" data-min="0" data-max="1" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">DIST</label><div class="knob-wrap" data-param="extSendDist" data-min="0" data-max="1" data-value="0"></div></div></div></div>
+        <div class="aux-row"><label class="label-tiny">AUX</label><div class="knob-wrap" data-param="auxSend" data-min="0" data-max="1" data-value="0"></div><button class="aux-mode-btn" title="AUX: POST = después del fader (por defecto) · PRE = antes del fader">POST</button></div>
+        <div class="fader-section"><div class="mute-mon-row"><button class="ch-mute-btn">MUTE</button><button class="ch-mon-btn" title="MONITOR: saca el canal del master y lo manda solo a la salida de monitor"><svg class="hp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="2.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/><rect x="16.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/></svg><span>MON</span></button></div><label class="label-tiny">VOL</label><input type="range" class="channel-fader" data-param="extFader2" min="0" max="1" step="0.01" value="0.8" orient="vertical"><canvas class="ch-meter" title="Post-fader level"></canvas></div>
+      </div>
+
+      <!-- ═══ CH07 BALADO-EXT IN ═══ -->
+      <div class="channel-strip ch06-input ext-ch ext-balado" id="ch08-input">
+        <div class="ch-header"><span class="ch-label">CH07</span><span class="ch-name">BALADO-EXT IN</span></div>
+        <div class="loop-selector"><label class="label-tiny">INPUT</label><div class="ext-select-row"><select class="loop-select ext-device-select"><option value="">— Select Input —</option></select><select class="ext-chan-select" title="Entrada de la interfaz (1+2 estéreo o una sola entrada)"><option value="st">1+2</option></select></div></div>
+        <button class="ch-ready-btn" title="Arm input monitoring">READY</button>
+        <span class="ext-status"></span>
+        <div class="knob-row"><div class="knob-group"><label class="label-tiny">GAIN</label><div class="knob-wrap" data-param="extGain" data-min="0" data-max="3" data-value="1"></div></div></div>
+        <div class="eq-section"><label class="label-tiny section-label">EQ</label><div class="knob-row eq-row"><div class="knob-group"><label class="label-tiny">HI</label><div class="knob-wrap" data-param="extEqHi" data-min="-24" data-max="6" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">MID</label><div class="knob-wrap" data-param="extEqMid" data-min="-24" data-max="6" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">LOW</label><div class="knob-wrap" data-param="extEqLow" data-min="-24" data-max="6" data-value="0"></div></div></div></div>
+        <div class="sends-section"><label class="label-tiny section-label">SENDS</label><div class="knob-row sends-row"><div class="knob-group"><label class="label-tiny">DLY</label><div class="knob-wrap" data-param="extSendDly" data-min="0" data-max="1" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">REV</label><div class="knob-wrap" data-param="extSendRev" data-min="0" data-max="1" data-value="0"></div></div><div class="knob-group"><label class="label-tiny">DIST</label><div class="knob-wrap" data-param="extSendDist" data-min="0" data-max="1" data-value="0"></div></div></div></div>
+        <div class="aux-row"><label class="label-tiny">AUX</label><div class="knob-wrap" data-param="auxSend" data-min="0" data-max="1" data-value="0"></div><button class="aux-mode-btn" title="AUX: POST = después del fader (por defecto) · PRE = antes del fader">POST</button></div>
+        <div class="fader-section"><div class="mute-mon-row"><button class="ch-mute-btn">MUTE</button><button class="ch-mon-btn" title="MONITOR: saca el canal del master y lo manda solo a la salida de monitor"><svg class="hp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="2.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/><rect x="16.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/></svg><span>MON</span></button></div><label class="label-tiny">VOL</label><input type="range" class="channel-fader" data-param="extFader3" min="0" max="1" step="0.01" value="0.8" orient="vertical"><canvas class="ch-meter" title="Post-fader level"></canvas></div>
+      </div>
+
+    </div>
+
+    <!-- FX CHAIN -->
+    <aside class="right-panel">
+      <section class="panel-section delay-section ch06">
+        <div class="fx-title-row"><h3 class="panel-title">TAPE DELAY</h3><button class="aux-mode-btn fx-aux-btn" id="delay-aux-mode-btn" title="AUX: POST = después del OUT (por defecto) · PRE = efecto a nivel completo">POST</button></div>
+        <div class="knob-row">
+          <div class="knob-group"><label class="label-tiny">OUT</label><div class="knob-wrap" id="delay-output-knob" data-param="delayOutput" data-min="0" data-max="1" data-value="0"></div></div>
+          <div class="knob-group"><label class="label-tiny">FDBK</label><div class="knob-wrap" id="delay-feedback-knob" data-param="delayFeedback" data-min="0" data-max="0.95" data-value="0.3"></div></div>
+          <div class="knob-group fx-aux"><label class="label-tiny">AUX</label><div class="knob-wrap" id="delay-aux-knob" data-param="delayAux" data-min="0" data-max="1" data-value="0"></div></div>
+        </div>
+        <div class="delay-time-section">
+          <label class="label-tiny">TIME</label>
+          <div class="delay-sync-buttons" id="delay-sync-btns">
+            <button class="sync-btn" data-division="1/4">1/4</button><button class="sync-btn" data-division="1/4T">1/4T</button>
+            <button class="sync-btn" data-division="1/8">1/8</button><button class="sync-btn" data-division="1/8T">1/8T</button>
+            <button class="sync-btn" data-division="1/16">1/16</button><button class="sync-btn" data-division="1/16T">1/16T</button>
+            <button class="sync-btn active" data-division="free">FREE</button>
+          </div>
+          <div class="knob-wrap" id="delay-time-knob" data-param="delayTime" data-min="10" data-max="500" data-value="250"></div>
+          <span class="freq-display" id="delay-time-val">250 ms</span>
+          <canvas class="fx-meter" id="delay-meter" title="Delay output level"></canvas>
+        </div>
+      </section>
+      <section class="panel-section reverb-section">
+        <div class="fx-title-row"><h3 class="panel-title">LONG REVERB</h3><button class="aux-mode-btn fx-aux-btn" id="reverb-aux-mode-btn" title="AUX: POST = después del OUT (por defecto) · PRE = efecto a nivel completo">POST</button></div>
+        <div class="knob-row">
+          <div class="knob-group"><label class="label-tiny">OUT</label><div class="knob-wrap" id="reverb-output-knob" data-param="reverbOutput" data-min="0" data-max="1" data-value="0"></div></div>
+          <div class="knob-group"><label class="label-tiny">DECAY</label><div class="knob-wrap" id="reverb-decay-knob" data-param="reverbDecay" data-min="1" data-max="10" data-value="4"></div></div>
+          <div class="knob-group"><label class="label-tiny">DAMP</label><div class="knob-wrap" id="reverb-damp-knob" data-param="reverbDamp" data-min="500" data-max="12000" data-value="4000"></div></div>
+          <div class="knob-group fx-aux"><label class="label-tiny">AUX</label><div class="knob-wrap" id="reverb-aux-knob" data-param="reverbAux" data-min="0" data-max="1" data-value="0"></div></div>
+        </div>
+        <canvas class="fx-meter" id="reverb-meter" title="Reverb output level"></canvas>
+      </section>
+      <section class="panel-section distortion-section">
+        <div class="fx-title-row"><h3 class="panel-title">DISTORTION</h3><button class="aux-mode-btn fx-aux-btn" id="dist-aux-mode-btn" title="AUX: POST = después del OUT (por defecto) · PRE = efecto a nivel completo">POST</button></div>
+        <div class="knob-row">
+          <div class="knob-group"><label class="label-tiny">OUT</label><div class="knob-wrap" id="dist-output-knob" data-param="distOutput" data-min="0" data-max="1" data-value="0"></div></div>
+          <div class="knob-group"><label class="label-tiny">DRIVE</label><div class="knob-wrap" id="dist-drive-knob" data-param="distDrive" data-min="1" data-max="50" data-value="8"></div></div>
+          <div class="knob-group"><label class="label-tiny">TONE</label><div class="knob-wrap" id="dist-tone-knob" data-param="distTone" data-min="500" data-max="8000" data-value="3000"></div></div>
+          <div class="knob-group fx-aux"><label class="label-tiny">AUX</label><div class="knob-wrap" id="dist-aux-knob" data-param="distAux" data-min="0" data-max="1" data-value="0"></div></div>
+        </div>
+        <canvas class="fx-meter" id="dist-meter" title="Distortion output level"></canvas>
+      </section>
+      <section class="panel-section cue-section">
+        <div class="cue-title-row"><h3 class="panel-title"><svg class="hp-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><rect x="2.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/><rect x="16.5" y="13.5" width="5" height="7.5" rx="1.6" fill="currentColor"/></svg> MONITOR</h3><span class="cue-status" id="cue-status">OFF</span></div>
+        <select id="cue-output-select" class="select-output cue-select" title="Salida de monitor"><option value="">— Off —</option></select>
+        <div class="cue-row">
+          <label class="label-tiny">CH</label><select id="cue-pair-select" class="select-output cue-pair-select" title="Par de canales de la salida"><option value="0">1-2</option></select>
+          <label class="label-tiny">LVL</label><div class="knob-wrap" id="cue-level-knob" data-param="cueLevel" data-min="0" data-max="1.5" data-value="1"></div>
+        </div>
+      </section>
+      <section class="panel-section aux-section">
+        <div class="cue-title-row"><h3 class="panel-title">AUX OUT</h3><span class="cue-status" id="aux-status">OFF</span></div>
+        <select id="aux-output-select" class="select-output cue-select" title="Salida del envío AUX"><option value="">— Off —</option></select>
+        <div class="cue-row">
+          <label class="label-tiny">CH</label><select id="aux-pair-select" class="select-output cue-pair-select" title="Par de canales de la salida"><option value="0">1-2</option></select>
+          <label class="label-tiny">LVL</label><div class="knob-wrap" id="aux-level-knob" data-param="auxLevel" data-min="0" data-max="1.5" data-value="1"></div>
+        </div>
+        <canvas class="fx-meter" id="aux-meter" title="Nivel que llega al AUX"></canvas>
+      </section>
+    </aside>
+  </main>
+
+  <footer id="footer">
+    <div class="sequencer-section">
+      <div class="seq-header-row"><h3 class="seq-title">KICKS — 32 STEPS</h3><button class="seq-random-btn" id="kick-random-btn">RND</button></div>
+      <div class="seq-steps" id="seq-steps"></div>
+    </div>
+  </footer>
+
+  <!-- ═══ PERF MONITOR PANEL ═══ -->
+  <div class="perf-panel" id="perf-panel">
+    <span class="perf-title">AUDIO PERFORMANCE</span>
+    <div class="perf-cpu-section">
+      <div class="perf-cpu-row">
+        <span class="perf-label">CPU (est.)</span>
+        <span class="perf-val" id="perf-cpu">—</span>
+      </div>
+      <div class="perf-bar"><div class="perf-bar-fill" id="perf-cpu-bar" style="width:0%"></div></div>
+    </div>
+    <hr class="perf-divider">
+    <div class="perf-stats">
+      <div class="perf-row"><span class="perf-label">Base Latency</span><span class="perf-val" id="perf-latency">—</span></div>
+      <div class="perf-row"><span class="perf-label">Output Latency</span><span class="perf-val" id="perf-output-latency">—</span></div>
+      <div class="perf-row"><span class="perf-label">Sample Rate</span><span class="perf-val" id="perf-samplerate">—</span></div>
+      <div class="perf-row"><span class="perf-label">Context</span><span class="perf-val" id="perf-ctx-state">—</span></div>
+      <div class="perf-row"><span class="perf-label">Glitches</span><span class="perf-val" id="perf-glitches">0</span></div>
+    </div>
+    <hr class="perf-divider">
+    <div>
+      <span class="perf-label">Buffer / Latency Mode</span>
+      <select class="perf-mode-select" id="perf-buffer-mode">
+        <option value="interactive">Interactive (baja latencia)</option>
+        <option value="balanced">Balanced (equilibrado)</option>
+        <option value="playback" selected>Playback (estable)</option>
+      </select>
+      <span class="perf-hint">Cambiar el modo reinicia el audio engine</span>
+    </div>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/knob.js"></script>
+  <script src="js/limiter.js"></script>
+  <script src="js/cue.js"></script>
+  <script src="js/audio-engine.js"></script>
+  <script src="js/transport.js"></script>
+  <script src="js/midi-clock.js"></script>
+  <script src="js/midi-learn.js"></script>
+  <script src="js/perf-monitor.js"></script>
+  <script src="js/tape-delay.js"></script>
+  <script src="js/reverb.js"></script>
+  <script src="js/distortion.js"></script>
+  <script src="js/global-filters.js"></script>
+  <script src="js/sequencer.js"></script>
+  <script src="js/ext-input.js"></script>
+  <script src="js/track-player.js"></script>
+  <script src="js/ui-helpers.js"></script>
+<script src="js/vu-meter.js"></script>
+<script src="js/level-meters.js"></script>
+
+<script src="js/sample-preloader.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,306 @@
+/* ═══════════════════════════════════════════
+   CHANNEL STRIP — Base Layout
+   Shared by CH01–CH04
+   ═══════════════════════════════════════════ */
+
+.channel-strip {
+  --ch-accent: var(--accent-green);
+  --ch-accent-dim: rgba(0,255,136,0.15);
+  --ch-font: var(--font-display);
+
+  flex: 1;
+  min-width: 140px;
+  max-width: 180px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.ch-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ch-label {
+  font-family: var(--ch-font);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+.ch-name {
+  font-family: var(--ch-font);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ch-accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Loop selector */
+.channel-strip .loop-selector {
+  width: 100%;
+  text-align: center;
+}
+.channel-strip .loop-select {
+  border-color: var(--ch-accent-dim);
+}
+
+/* Play button */
+.ch-transport-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+}
+.ch-play-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-raised);
+  border: 2px solid var(--border-bright);
+  color: var(--text-secondary);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Speed buttons /2 x2 */
+.speed-btn {
+  width: 26px;
+  height: 20px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--ch-font);
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  padding: 0;
+}
+.speed-btn:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.speed-btn.active {
+  background: var(--ch-accent);
+  color: #000;
+  border-color: var(--ch-accent);
+}
+
+/* Waveform */
+.waveform-canvas {
+  width: 100%;
+  height: 32px;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  display: block;
+}
+.ch-play-btn:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.ch-play-btn.playing {
+  background: var(--ch-accent);
+  border-color: var(--ch-accent);
+  color: #000;
+  box-shadow: 0 0 10px var(--ch-accent-dim);
+}
+.ch-play-btn.pending {
+  animation: pending-blink 0.4s infinite alternate;
+  border-color: var(--ch-accent);
+  color: var(--ch-accent);
+}
+@keyframes pending-blink {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+/* Knob rows */
+.knob-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: flex-start;
+}
+.knob-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+/* EQ Section */
+.eq-section, .sends-section {
+  width: 100%;
+  text-align: center;
+}
+.section-label {
+  margin-bottom: 4px;
+  color: var(--ch-accent);
+  font-size: 8px;
+}
+.eq-row, .sends-row {
+  justify-content: space-around;
+}
+
+/* Channel fader */
+.fader-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.channel-fader {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--fader-h);
+  height: 6px;
+  background: var(--knob-track);
+  border-radius: 3px;
+  outline: none;
+  transform: rotate(-90deg);
+  transform-origin: center;
+  margin: 58px 0;
+}
+
+.channel-fader::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 24px;
+  background: linear-gradient(180deg, #666 0%, #444 50%, #666 100%);
+  border: 1px solid #888;
+  border-radius: 2px;
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.channel-fader::-moz-range-thumb {
+  width: 14px;
+  height: 24px;
+  background: linear-gradient(180deg, #666 0%, #444 50%, #666 100%);
+  border: 1px solid #888;
+  border-radius: 2px;
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+
+/* Knob fill color uses channel accent */
+.channel-strip .knob-fill-arc {
+  stroke: var(--ch-accent);
+}
+
+/* ─── MINI GATE SEQUENCER ─── */
+.gate-seq {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  border-top: 1px solid var(--border-subtle);
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+.gate-seq.active {
+  opacity: 1;
+}
+
+.gate-btn-row {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+}
+
+.gate-toggle {
+  flex: 1;
+  height: 20px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--ch-font);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.gate-toggle:hover {
+  border-color: var(--ch-accent);
+  color: var(--ch-accent);
+}
+.gate-toggle.active {
+  background: var(--ch-accent);
+  color: #000;
+  border-color: var(--ch-accent);
+}
+
+.gate-random-btn {
+  height: 20px;
+  padding: 0 6px;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--ch-font);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.gate-random-btn:hover {
+  border-color: var(--ch-accent);
+  color: var(--ch-accent);
+}
+.gate-random-btn:active {
+  background: var(--ch-accent);
+  color: #000;
+}
+
+.gate-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  width: 100%;
+}
+
+.gate-step {
+  aspect-ratio: 1;
+  background: var(--bg-dark);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.08s;
+  padding: 0;
+  min-height: 0;
+}
+.gate-step:hover {
+  border-color: var(--ch-accent);
+}
+.gate-step.beat {
+  border-bottom: 1px solid var(--text-dim);
+}
+.gate-step.on {
+  background: var(--ch-accent);
+  border-color: var(--ch-accent);
+}
+.gate-step.current {
+  box-shadow: inset 0 0 0 1px var(--led-active);
+}

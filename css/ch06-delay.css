@@ -1,0 +1,15 @@
+/* CH06 — TAPE DELAY */
+.delay-section.ch06 {
+  --ch-accent: #00ccdd;
+  --ch-accent-dim: rgba(0,204,221,0.15);
+}
+.delay-section .knob-fill-arc { stroke: #00ccdd; }
+.delay-section .panel-title { color: #00ccdd; }
+
+/* REVERB */
+.reverb-section .knob-fill-arc { stroke: #aa88ff; }
+.reverb-section .panel-title { color: #aa88ff; }
+
+/* DISTORTION */
+.distortion-section .knob-fill-arc { stroke: #ff6633; }
+.distortion-section .panel-title { color: #ff6633; }

@@ -1,0 +1,38 @@
+/* CH05 — KICKS (narrow) */
+.channel-strip.ch05 {
+  --ch-accent: #ffaa22;
+  --ch-accent-dim: rgba(255,170,34,0.15);
+  --ch-font: 'JetBrains Mono', monospace;
+  min-width: 70px;
+  max-width: 90px;
+}
+.channel-strip.ch05 .loop-select {
+  font-size: 8px;
+  padding: 2px 3px;
+}
+
+/* Vertical sends stack */
+.sends-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+}
+.sends-vertical .knob-group {
+  flex-direction: row;
+  gap: 2px;
+  width: 100%;
+  justify-content: center;
+}
+.sends-vertical .knob-wrap {
+  --knob-size: 32px;
+  width: 32px;
+  height: 32px;
+}
+.sends-vertical .knob-svg {
+  width: 32px;
+  height: 32px;
+}
+
+.kicks-section .knob-fill-arc { stroke: #ffaa22; }

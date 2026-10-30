@@ -1,0 +1,36 @@
+/* CH06 — EXT INPUT */
+.channel-strip.ch06-input {
+  --ch-accent: #00ff88;
+  --ch-accent-dim: rgba(0,255,136,0.15);
+  --ch-font: 'JetBrains Mono', monospace;
+}
+
+/* READY button */
+.ch-ready-btn {
+  width: 100%;
+  height: 28px;
+  background: var(--bg-raised);
+  border: 2px solid var(--border-bright);
+  border-radius: 4px;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ch-ready-btn:hover {
+  border-color: var(--ch-accent);
+  color: var(--ch-accent);
+}
+.ch-ready-btn.active {
+  background: #ff3344;
+  border-color: #ff3344;
+  color: #fff;
+  animation: live-pulse 1s infinite alternate;
+}
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 4px rgba(255,51,68,0.3); }
+  100% { box-shadow: 0 0 12px rgba(255,51,68,0.7); }
+}

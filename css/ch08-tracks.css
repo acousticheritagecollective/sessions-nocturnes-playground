@@ -1,0 +1,133 @@
+/* ═══════════════════════════════════════════
+   CH08 — TRACK PLAYER DECK A  v12
+   ═══════════════════════════════════════════ */
+
+.channel-strip.ch08a { --ch-accent: #00ddff; --ch-accent-dim: rgba(0,221,255,0.15); }
+.channel-strip.ch08b { --ch-accent: #ff44cc; --ch-accent-dim: rgba(255,68,204,0.15); }
+.ch08a, .ch08b { gap: 2px !important; padding: 4px 5px !important; min-width: 170px; max-width: 200px; }
+.ch08a .ch-header { border-bottom: 2px solid var(--ch-accent); }
+.ch08b .ch-header { border-bottom: 2px solid var(--ch-accent); }
+
+.tk-track-select {
+  width: 100%; font-size: 8px; padding: 2px 3px;
+  background: var(--bg-raised); color: var(--text-primary);
+  border: 1px solid var(--ch-accent-dim); border-radius: 3px;
+  font-family: var(--font-display); outline: none;
+}
+.tk-track-select:focus { border-color: var(--ch-accent); }
+
+.tk-waveform {
+  width: 100%; height: 52px; border: 1px solid var(--border-subtle); border-radius: 3px;
+  cursor: crosshair; display: block; background: var(--bg-dark);
+}
+.tk-waveform:hover { border-color: var(--ch-accent-dim); }
+
+.tk-time-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-family: var(--font-display); font-size: 8px; color: var(--text-dim);
+  padding: 0 1px; height: 11px; width: 100%;
+}
+.tk-time { color: var(--ch-accent); font-weight: 500; font-size: 9px; }
+.tk-remaining { font-size: 8px; }
+.tk-bpm-info { font-size: 7px; }
+.tk-bpm-info .detected { color: var(--ch-accent); }
+.tk-bar-info { font-size: 7px; color: #ffe600; font-weight: 700; letter-spacing: 0.03em; }
+
+.tk-transport-row { display: flex; gap: 4px; justify-content: center; align-items: center; width: 100%; }
+
+.tk-play-btn {
+  width: 32px; height: 24px; border-radius: 3px;
+  background: var(--bg-raised); border: 2px solid var(--border-bright);
+  color: var(--text-secondary); font-size: 10px; cursor: pointer;
+  transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+}
+.tk-play-btn:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.tk-play-btn.playing { background: var(--ch-accent); border-color: var(--ch-accent); color: #000; box-shadow: 0 0 8px var(--ch-accent-dim); }
+.tk-play-btn.pending { animation: pending-blink 0.4s infinite alternate; border-color: var(--ch-accent); }
+@keyframes pending-blink { from { opacity: 0.4; } to { opacity: 1; } }
+
+.tk-cue-btn {
+  height: 24px; padding: 0 8px;
+  background: var(--bg-raised); border: 1px solid var(--border-bright); border-radius: 3px;
+  color: var(--text-dim); font-family: var(--font-display);
+  font-size: 7px; font-weight: 700; letter-spacing: 0.08em; cursor: pointer; transition: all 0.15s;
+}
+.tk-cue-btn:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.tk-cue-btn:active { background: var(--ch-accent); color: #000; }
+
+/* ── LOOP SECTION ── */
+.tk-loop-section { width: 100%; padding: 3px; border: 1px solid var(--border-subtle); border-radius: 3px; background: rgba(0,0,0,0.15); }
+.tk-loop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+
+/* LOOP TOGGLE — dedicated ON/OFF button */
+.tk-loop-toggle {
+  font-size: 7px; font-family: var(--font-display); font-weight: 700;
+  color: var(--text-dim); letter-spacing: 0.1em; cursor: pointer;
+  background: var(--bg-raised); border: 1px solid var(--border-subtle); border-radius: 2px;
+  padding: 1px 6px; height: 16px; line-height: 14px; transition: all 0.15s;
+}
+.tk-loop-toggle:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.tk-loop-toggle.active { background: var(--ch-accent); color: #000; border-color: var(--ch-accent); box-shadow: 0 0 6px var(--ch-accent-dim); }
+.tk-loop-toggle.pending { background: rgba(255,230,0,0.25); border-color: #ffe600; color: #ffe600; animation: loopPendBlink 0.4s ease infinite alternate; }
+@keyframes loopPendBlink { from { opacity: 0.5; } to { opacity: 1; } }
+
+.tk-loop-nav { display: flex; gap: 2px; }
+.tk-loop-left, .tk-loop-right {
+  font-size: 7px; width: 16px; height: 14px; border: 1px solid var(--border-subtle); border-radius: 2px;
+  background: var(--bg-raised); color: var(--text-dim); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; padding: 0; transition: all 0.15s;
+}
+.tk-loop-left:hover, .tk-loop-right:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+
+/* SIZE BUTTONS — only select size, never toggle loop */
+.tk-loop-btns { display: flex; gap: 1px; }
+.tk-loop-btn {
+  font-size: 7px; padding: 1px 0; border: 1px solid var(--border-subtle); border-radius: 2px;
+  background: var(--bg-dark); color: var(--text-dim); cursor: pointer;
+  font-family: var(--font-display); font-weight: 700; transition: all 0.12s; flex: 1; min-width: 0; text-align: center;
+}
+.tk-loop-btn:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.tk-loop-btn.selected { border-color: var(--ch-accent); color: var(--ch-accent); background: var(--ch-accent-dim); }
+
+/* ── FILTERS ── */
+.tk-filter-row { display: flex; gap: 4px; align-items: flex-start; justify-content: center; width: 100%; }
+.tk-filter-group { display: flex; flex-direction: column; align-items: center; flex: 1; gap: 1px; }
+.tk-hpf-toggle, .tk-lpf-toggle {
+  font-size: 6px; padding: 1px 4px; height: 14px;
+  border: 1px solid var(--border-subtle); border-radius: 2px;
+  background: var(--bg-raised); color: var(--text-dim); cursor: pointer;
+  font-family: var(--font-display); font-weight: 700; letter-spacing: 0.06em; transition: all 0.15s;
+}
+.tk-hpf-toggle:hover, .tk-lpf-toggle:hover { border-color: var(--ch-accent); color: var(--ch-accent); }
+.tk-hpf-toggle.active, .tk-lpf-toggle.active { background: var(--ch-accent); color: #000; border-color: var(--ch-accent); }
+
+.ch08a .sends-row, .ch08b .sends-row { gap: 2px; }
+.ch08a .fader-section, .ch08b .fader-section { padding-top: 0; }
+.ch08a .channel-fader, .ch08b .channel-fader { height: 80px; }
+.ch08a .knob-fill-arc { stroke: #00ddff; }
+.ch08b .knob-fill-arc { stroke: #ff44cc; }
+
+/* ── GATE SEQ ── */
+.ch08a .gate-seq, .ch08b .gate-seq { width: 90%; }
+.ch08a .gate-grid, .ch08b .gate-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 1px; width: 100%; }
+.ch08a .gate-step, .ch08b .gate-step {
+  height: 10px; border: 1px solid var(--border-subtle); border-radius: 1px;
+  background: var(--bg-dark); cursor: pointer; transition: all 0.1s; padding: 0;
+}
+.ch08a .gate-step:nth-child(4n+1), .ch08b .gate-step:nth-child(4n+1) { border-left: 1px solid rgba(255,255,255,0.2); }
+.ch08a .gate-step.on, .ch08b .gate-step.on { background: var(--ch-accent); border-color: var(--ch-accent); }
+.ch08a .gate-step.current, .ch08b .gate-step.current { box-shadow: 0 0 3px #fff; outline: 1px solid #fff; z-index: 1; }
+
+/* ── COMPACT LAYOUT ── */
+.channels-area { gap: 1px !important; padding: 4px !important; }
+.channel-strip { min-width: 110px !important; max-width: 170px !important; padding: 4px 4px !important; gap: 2px !important; }
+.right-panel { width: 170px !important; min-width: 170px !important; padding: 6px !important; gap: 8px !important; }
+.channel-fader { height: 80px !important; }
+.ch-header { padding: 2px 4px !important; margin-bottom: 1px !important; }
+.ch-header .ch-label { font-size: 8px !important; }
+.ch-header .ch-name { font-size: 7px !important; }
+.knob-wrap { --knob-size: 30px; }
+.eq-section, .sends-section { margin-top: 0 !important; }
+.section-label { font-size: 6px !important; margin-bottom: 0 !important; }
+.fader-section { padding-top: 0 !important; }
+.fader-section .label-tiny { font-size: 6px !important; }
